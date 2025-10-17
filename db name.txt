@@ -1,0 +1,5 @@
+// configuration d base de donnee
+$host = 'localhost';      // Server name
+$dbname = 'ahnens9421_enspm';  //database name
+$username = 'ahnens9421_sam';       
+$password = 'Samglish12';   
