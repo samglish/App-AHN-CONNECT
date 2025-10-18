@@ -1,46 +1,55 @@
 # 🌐 AHN CONNECT
 
-AHN CONNECT est une **plateforme sociale académique** développée en **PHP**, conçue pour favoriser la **communication, la collaboration et le partage d’informations** entre étudiants, enseignants et responsables d’un département universitaire.
+AHN CONNECT est une **plateforme sociale académique** développée en **PHP**, destinée à favoriser la **communication, le partage de ressources et la collaboration** au sein d’un département universitaire.  
+Elle combine les fonctionnalités d’un **réseau social**, d’un **espace d’apprentissage** et d’un **centre de ressources**.
 
 ---
 
 ## Présentation
 
-L’objectif principal d’**AHN CONNECT** est de créer un espace numérique dynamique permettant :
-- aux étudiants de publier des actualités, liker et commenter ;
-- aux enseignants de partager des annonces et supports pédagogiques ;
-- au département de diffuser des informations officielles et d’interagir directement avec la communauté académique.
+L’objectif d’**AHN CONNECT** est de créer une communauté numérique dynamique reliant :
+- les **étudiants**, pour échanger et partager leurs expériences ;
+- les **enseignants**, pour publier des cours et annonces ;
+- et le **département**, pour diffuser les informations et résultats officiels.
 
-Ce projet a été initié et développé par **Beidi Dina Samuel**, moniteur à l’Université de Maroua, dans le cadre d’un projet de valorisation des compétences en développement web, systèmes et réseaux.
+Ce projet a été conçu et développé par **Beidi Dina Samuel**, moniteur à l’Université de Maroua et formateur en informatique, dans un but pédagogique et communautaire.
 
 ---
 
 ## Fonctionnalités principales
 
-**Authentification sécurisée**  
-- Connexion et inscription des étudiants via la table `etudiants`  
-- Gestion de session et profil utilisateur (photo, nom, prénom)
+### Espace étudiant
+- Connexion et inscription via la table `etudiants`
+- Gestion de profil (photo, informations, déconnexion)
+- Ajout et gestion d’amis
+- Messagerie privée entre amis
 
-**Fil d’actualités dynamique**  
-- Publication de posts (textes, images, fichiers)  
-- Likes et commentaires en temps réel (AJAX polling)  
-- Affichage instantané sans rechargement de page  
+### Fil d’actualités
+- Publication de posts (textes, images, fichiers)
+- Likes et commentaires dynamiques (AJAX)
+- Notifications en temps réel
+- Partage d’informations du département
 
-**Notifications en temps réel**  
-- Système de notification automatique pour likes et commentaires  
-- Interface visuelle intuitive (icône de cloche avec compteur)
+### Actualités du département
+- Communiqués et événements officiels
 
-**Gestion du profil utilisateur**  
-- Menu déroulant (dropdown) avec photo, nom et bouton de déconnexion  
-- Modification des informations personnelles  
+### Discussions de groupe
+- Envoi de messages en temps réel
+- Espace de travail collaboratif (étudiants ↔ enseignants)
 
-**Section d’actualités du département**  
-- Publication officielle des communiqués et événements  
-- Accès filtré selon le rôle (étudiant, enseignant, admin)
+### Bibliothèque académique
+- Archivage des anciens sujets, mémoires, rapports, TD et examens
+- Téléchargement sécurisé des fichiers
+- Organisation par filière et année académique
 
-**Galerie des projets étudiants**  
-- Présentation des travaux, objets 3D et créations artistiques  
-- Valorisation des compétences et visibilité des productions du département
+### Résultats de session
+- Consultation sécurisée des notes par étudiant
+- Interface simple et responsive
+
+### À propos / Visite du département
+- Présentation du département et de son historique
+- Informations sur les responsables, contacts et partenaires
+- Galerie de projets et réalisations des étudiants
 
 ---
 
@@ -48,15 +57,14 @@ Ce projet a été initié et développé par **Beidi Dina Samuel**, moniteur à 
 
 | Catégorie | Outils / Technologies |
 |------------|----------------------|
-| **Frontend** | HTML5, CSS3, JavaScript, AJAX |
+| **Frontend** | HTML5, CSS3, JavaScript, AJAX, Bootstrap |
 | **Backend** | PHP (procédural & orienté objet) |
-| **Base de données** | MySQL (via XAMPP / phpMyAdmin) |
-| **Serveur local** | Apache (XAMPP) |
-| **Langues** | Français |
-| **Autres** | jQuery, Font Awesome, Bootstrap (responsive design) |
+| **Base de données** | MySQL (XAMPP / phpMyAdmin) |
+| **Serveur local** | Apache |
+| **Langue** | Français |
+| **Autres** | jQuery, Font Awesome, JSON, Sessions PHP |
 
 ---
-
 ## Installation et exécution
 
 ### 1. Cloner le dépôt
@@ -85,4 +93,41 @@ $host = 'localhost';      // Server name
 $dbname = 'ahnens9421_enspm';  //database name
 $username = 'ahnens9421_sam';       
 $password = 'Samglish12';
+```
+```pgsql
+ahn-connect/
+│
+├── config.php                   # Configuration de la base de données
+├── index.php                    # Page principale (fil d’actualités)
+│
+├── includes/                    # Fichiers réutilisables
+│   ├── header.php
+│   ├── footer.php
+│   ├── menu.php
+│   └── functions.php
+│
+├── assets/                      # Ressources du site
+│   ├── css/
+│   ├── js/
+│   └── img/
+│
+├── uploads/                     # Images et documents partagés
+│
+├── modules/                     # Modules principaux de l'application
+│   ├── actualites/              # Actualités et publications
+│   ├── amis/                    # Gestion des amis et messagerie
+│   ├── discussions/             # Discussions de groupe
+│   ├── resultats/               # Résultats académiques
+│   ├── bibliotheque/            # Ressources et anciens sujets
+│   └── apropos/                 # Présentation du département
+│
+├── notifications.php            # Notifications en temps réel
+├── profil.php                   # Profil utilisateur
+├── login.php / register.php     # Authentification
+│
+├── sql/
+│   └── ahn_connect.sql          # Script de la base de données
+│
+├── LICENSE                      # Licence MIT
+└── README.md                    # Documentation du projet
 ```
