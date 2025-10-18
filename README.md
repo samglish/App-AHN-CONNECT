@@ -59,7 +59,7 @@ Ce projet a été initié et développé par **Beidi Dina Samuel**, moniteur à 
 
 ## Installation et exécution
 
-### 🔹 1. Cloner le dépôt
+### 1. Cloner le dépôt
 ```bash
 git clone https://github.com/samglish/app-ahn-connect.git
 ```
@@ -72,4 +72,17 @@ C:\xampp\htdocs\ahn-connect
 * Crée une base de données :
 ```sql
 CREATE DATABASE ahnens9421_sam;
+```
+* Importe le fichier SQL fourni :
+```pgsql
+ahnens9421_enspm 2025.sql
+```
+### 4. Configurer la connexion
+
+Dans le fichier : db.php
+```sql
+$host = 'localhost';      // Server name
+$dbname = 'ahnens9421_enspm';  //database name
+$username = 'ahnens9421_sam';       
+$password = 'Samglish12';
 ```
