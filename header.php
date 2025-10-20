@@ -18,12 +18,10 @@
     <body>
             <header>
                 <div class="conatainer header-container">
-                    <div class="logo">
-                        <i class="fas fa-graduation-cap"></i>
-                        <h1>AHN CONNECT</h1>
-                    </div>
+                    
                  <?php include 'navigation.php'; ?>  
                 </div> 
+                
            </header>
 
            <div class="container">
