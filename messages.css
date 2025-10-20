@@ -1,0 +1,174 @@
+/* === STYLE MESSAGERIE PRIVÉE AHN CONNECT === */
+
+.container-messages {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 15px;
+  height: calc(100vh - 180px); /* adapte à ton header/footer */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* === Liste d’amis (gauche) === */
+.liste-amis {
+  width: 30%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  height: 100%;
+}
+
+.liste-amis h3 {
+  background: #0066cc;
+  color: white;
+  padding: 10px;
+  margin: 0;
+  border-radius: 12px 12px 0 0;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.liste-amis ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.liste-amis li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background 0.2s;
+}
+
+.liste-amis li:hover {
+  background: #f5faff;
+}
+
+.liste-amis img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+/* === Zone de chat (droite) === */
+.zone-chat {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* En-tête du chat */
+.header-chat {
+  background: #0066cc;
+  color: white;
+  padding: 10px 15px;
+  font-weight: bold;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Messages */
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px;
+  border-radius: 15px;
+  word-wrap: break-word;
+}
+
+.message.exp {
+  background: #0066cc;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 0;
+}
+
+.message.dest {
+  background: #e5e5ea;
+  align-self: flex-start;
+  border-bottom-left-radius: 0;
+}
+
+/* Formulaire d’envoi */
+.form-message {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+}
+
+.form-message input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  padding: 10px 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-message input:focus {
+  border-color: #0066cc;
+}
+
+.form-message button {
+  margin-left: 10px;
+  border: none;
+  background: #0066cc;
+  color: white;
+  border-radius: 25px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.form-message button:hover {
+  background: #004c99;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .container-messages {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* reste côte à côte */
+    height: calc(100vh - 150px);
+  }
+
+  .liste-amis {
+    width: 100%;
+    max-width: none;
+  }
+
+  .zone-chat {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-messages {
+    grid-template-columns: 1fr; /* passe en pile SEULEMENT si trop petit */
+    height: auto;
+  }
+}
+

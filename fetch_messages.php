@@ -1,7 +1,6 @@
 <?php
 session_start();
 include 'db.php';
-
 if(!isset($_SESSION['id'])) exit;
 
 $mon_id = $_SESSION['id'];
@@ -11,11 +10,11 @@ $stmt = $conn->prepare("
     SELECT m.*, e.prenom, e.nom
     FROM messages m
     JOIN etudiants e ON m.expediteur_id = e.id
-    WHERE (m.expediteur_id = ? AND m.destinataire_id = ?)
-       OR (m.expediteur_id = ? AND m.destinataire_id = ?)
+    WHERE (m.expediteur_id=? AND m.destinataire_id=?) 
+       OR (m.expediteur_id=? AND m.destinataire_id=?)
     ORDER BY m.date_envoi ASC
 ");
-$stmt->bind_param("iiii", $mon_id, $dest_id, $dest_id, $mon_id);
+$stmt->bind_param("iiii",$mon_id,$dest_id,$dest_id,$mon_id);
 $stmt->execute();
 $res = $stmt->get_result();
 
