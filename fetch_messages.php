@@ -2,29 +2,29 @@
 session_start();
 include 'db.php';
 
-if (!isset($_SESSION['id'])) exit;
+if(!isset($_SESSION['id'])) exit;
 
-$user_id = $_SESSION['id'];
-$destinataire_id = intval($_GET['id']);
+$mon_id = $_SESSION['id'];
+$dest_id = intval($_GET['id']);
 
 $stmt = $conn->prepare("
-    SELECT m.*, e.prenom AS expediteur_prenom
+    SELECT m.*, e.prenom, e.nom
     FROM messages m
-    JOIN etudiants e ON e.id = m.expediteur_id
+    JOIN etudiants e ON m.expediteur_id = e.id
     WHERE (m.expediteur_id = ? AND m.destinataire_id = ?)
        OR (m.expediteur_id = ? AND m.destinataire_id = ?)
     ORDER BY m.date_envoi ASC
 ");
-$stmt->bind_param("iiii", $user_id, $destinataire_id, $destinataire_id, $user_id);
+$stmt->bind_param("iiii", $mon_id, $dest_id, $dest_id, $mon_id);
 $stmt->execute();
-$result = $stmt->get_result();
+$res = $stmt->get_result();
 
-while ($msg = $result->fetch_assoc()) {
-    $classe = ($msg['expediteur_id'] == $user_id) ? 'sent' : 'received';
-    echo "<div class='message $classe'>";
-    echo "<strong>" . htmlspecialchars($msg['expediteur_prenom']) . ":</strong><br>";
-    echo nl2br(htmlspecialchars($msg['contenu'])) . "<br>";
-    echo "<small>" . htmlspecialchars($msg['date_envoi']) . "</small>";
-    echo "</div>";
+while($m = $res->fetch_assoc()){
+    $cls = ($m['expediteur_id'] == $mon_id) ? 'me' : 'friend';
+    echo "<div class='message $cls' style='padding:8px; margin-bottom:8px; border-radius:12px; max-width:70%; ";
+    echo ($cls=='me') ? "background:#007bff; color:white; margin-left:auto; text-align:right;" : "background:#f1f1f1; margin-right:auto; text-align:left;";
+    echo "'>";
+    echo "<strong>".htmlspecialchars($m['prenom']).":</strong> ".htmlspecialchars($m['contenu'])."<br>";
+    echo "<small>".$m['date_envoi']."</small></div>";
 }
 

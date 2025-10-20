@@ -3,26 +3,22 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
-include 'db.php'; // connexion à la base
+include 'db.php'; // connexion
+include 'header.php'; // ton header AHN CONNECT
 
 if (!isset($_SESSION['id'])) {
-    header("Location: login.php");
-    exit;
+    die("Vous devez être connecté !");
 }
 
 $mon_id = $_SESSION['id'];
-
-// Vérifie si on a un destinataire sélectionné
 $destinataire_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Récupération de la liste des amis (tous les autres étudiants sauf toi)
+// Liste des amis
 $amis = [];
-$result = $conn->query("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id != $mon_id");
-while ($row = $result->fetch_assoc()) {
-    $amis[] = $row;
-}
+$res = $conn->query("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id != $mon_id");
+while ($row = $res->fetch_assoc()) { $amis[] = $row; }
 
-// Si un destinataire est choisi, récupère ses infos
+// Infos destinataire
 $destinataire = null;
 if ($destinataire_id > 0) {
     $stmt = $conn->prepare("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id = ?");
@@ -30,93 +26,63 @@ if ($destinataire_id > 0) {
     $stmt->execute();
     $destinataire = $stmt->get_result()->fetch_assoc();
 }
-
-// Envoi d’un message
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $destinataire_id > 0) {
-    $message = trim($_POST['message']);
-    if ($message !== '') {
-    $stmt = $conn->prepare("INSERT INTO messages (expediteur_id, destinataire_id, contenu) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $mon_id, $destinataire_id, $message);
-        $stmt->execute();
-    }
-}
-
-// Récupération des messages entre moi et le destinataire
-$messages = [];
-if ($destinataire_id > 0) {
-$stmt = $conn->prepare("
-    SELECT m.*, e.prenom, e.nom
-    FROM messages m
-    JOIN etudiants e ON m.expediteur_id = e.id
-    WHERE (m.expediteur_id = ? AND m.destinataire_id = ?)
-       OR (m.expediteur_id = ? AND m.destinataire_id = ?)
-    ORDER BY m.date_envoi ASC
-");
-
-    $stmt->bind_param("iiii", $mon_id, $destinataire_id, $destinataire_id, $mon_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $messages[] = $row;
-    }
-}
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Messagerie privée - AHN CONNECT</title>
-<style>
-body { font-family: Arial; display: flex; }
-.sidebar { width: 25%; background: #f1f1f1; padding: 10px; height: 100vh; overflow-y: auto; }
-.chat { flex: 1; display: flex; flex-direction: column; }
-.messages { flex: 1; padding: 10px; overflow-y: auto; background: #fafafa; }
-.message { margin-bottom: 8px; }
-.message.me { text-align: right; }
-form { display: flex; padding: 10px; background: #ddd; }
-input[type=text] { flex: 1; padding: 8px; }
-button { padding: 8px 12px; }
-.friend { margin-bottom: 10px; }
-.friend a { text-decoration: none; color: #333; }
-.friend img { width: 40px; height: 40px; border-radius: 50%; vertical-align: middle; }
-</style>
-</head>
-<body>
+<div class="container" style="display:flex; min-height:80vh; padding:20px;">
+    <!-- Sidebar amis -->
+    <div class="sidebar" style="width:25%; background:#f1f1f1; padding:10px; overflow-y:auto;">
+        <h3>Mes amis</h3>
+        <?php foreach ($amis as $a): ?>
+            <div style="display:flex; align-items:center; margin-bottom:10px; gap:10px;">
+                <img src="<?= htmlspecialchars($a['photo_profil']) ?>" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" alt="">
+                <a href="messages.php?id=<?= $a['id'] ?>">
+                    <?= htmlspecialchars($a['prenom'].' '.$a['nom']) ?>
+                </a>
+            </div>
+        <?php endforeach; ?>
+    </div>
 
-<div class="sidebar">
-    <h3>Mes amis</h3>
-    <?php foreach ($amis as $a): ?>
-        <div class="friend">
-            <a href="messages.php?id=<?= $a['id'] ?>">
-                <img src="<?= $a['photo_profil'] ?>" alt="photo">
-                <?= htmlspecialchars($a['prenom'] . ' ' . $a['nom']) ?>
-            </a>
-        </div>
-    <?php endforeach; ?>
+    <!-- Chat -->
+    <div class="chat" style="flex:1; display:flex; flex-direction:column; background:#e9ecef; margin-left:20px; border-radius:8px; overflow:hidden;">
+        <?php if($destinataire): ?>
+            <h3 style="padding:10px; background:#007bff; color:white; margin:0;"><?= htmlspecialchars($destinataire['prenom'].' '.$destinataire['nom']) ?></h3>
+            <div id="messages" style="flex:1; overflow-y:auto; padding:10px;"></div>
+            <form id="sendForm" style="display:flex; padding:10px; background:#ddd;">
+                <input type="text" id="message" placeholder="Écrire un message..." style="flex:1; padding:10px; border-radius:12px; border:1px solid #ccc;">
+                <input type="hidden" id="dest_id" value="<?= $destinataire_id ?>">
+                <button type="submit" style="padding:10px 15px; border:none; border-radius:12px; background:#007bff; color:white; cursor:pointer; margin-left:5px;">Envoyer</button>
+            </form>
+        <?php else: ?>
+            <p style="padding:10px;">Sélectionnez un ami pour discuter.</p>
+        <?php endif; ?>
+    </div>
 </div>
 
-<div class="chat">
-    <?php if ($destinataire): ?>
-        <h3>Discussion avec <?= htmlspecialchars($destinataire['prenom'] . ' ' . $destinataire['nom']) ?></h3>
-        <div class="messages">
-            <?php foreach ($messages as $m): ?>
-                <div class="message <?= ($m['expediteur_id'] == $mon_id) ? 'me' : '' ?>">
-                    <strong><?= htmlspecialchars($m['prenom']) ?>:</strong>
-                    <?= htmlspecialchars($m['contenu']) ?><br>
-                    <small><?= $m['date_envoi'] ?></small>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <form method="POST">
-            <input type="text" name="message" placeholder="Écrire un message..." autocomplete="off">
-            <button type="submit">Envoyer</button>
-        </form>
-    <?php else: ?>
-        <p>Sélectionnez un ami pour commencer une discussion.</p>
-    <?php endif; ?>
-</div>
+<script>
+function loadMessages(){
+    let dest_id = document.getElementById('dest_id').value;
+    fetch('fetch_messages.php?id='+dest_id)
+        .then(res=>res.text())
+        .then(data=>{
+            document.getElementById('messages').innerHTML = data;
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        });
+}
 
-</body>
-</html>
+document.getElementById('sendForm')?.addEventListener('submit', function(e){
+    e.preventDefault();
+    let msg = document.getElementById('message').value.trim();
+    let dest_id = document.getElementById('dest_id').value;
+    if(msg==='') return;
+    let formData = new FormData();
+    formData.append('contenu', msg);
+    formData.append('recepteur_id', dest_id);
+    fetch('send_message.php', {method:'POST', body: formData})
+        .then(()=>{ document.getElementById('message').value=''; loadMessages(); });
+});
+
+setInterval(loadMessages,2000);
+loadMessages();
+</script>
+
 
