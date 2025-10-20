@@ -137,7 +137,7 @@ body {
         <a href="index.php" title="Accueil"><i class="fas fa-home"></i><span>Accueil</span></a>
         <a href="news.php" title="Amis & Actus"><i class="fas fa-user-friends"></i><span>Amis/Actus</span></a>
         <a href="resultats.php" title="Résultats"><i class="fas fa-bell"></i><span>Résultats</span></a>
-        <a href="chat.php" title="Discussions"><i class="fas fa-comments"></i><span>Discussions</span></a>
+        <a href="messages.php" title="Discussions"><i class="fas fa-comments"></i><span>Discussions</span></a>
         <a href="library.php" title="Bibliothèque"><i class="fas fa-book"></i><span>Bibliothèque</span></a>
         <a href="apropos.php" title="À propos"><i class="fas fa-info-circle"></i><span>À propos</span></a>
     </nav>

@@ -25,6 +25,7 @@ if($destinataire_id > 0){
     $destinataire = $stmt->get_result()->fetch_assoc();
 }
 ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <!-- === CSS intégrée directement === -->
 <style>
@@ -87,7 +88,7 @@ if($destinataire_id > 0){
   background:#fff;
   border-radius:12px;
   overflow:hidden;
-  height:100%;
+  height:105%;
   box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
@@ -177,17 +178,49 @@ if($destinataire_id > 0){
 @media(max-width:480px){
   .container-messages { grid-template-columns:1fr; height:auto;}
 }
+
+/* === Sidebar réduite encore plus sur mobile et chat agrandi === */
+@media (max-width:768px) {
+  .sidebar {
+    flex: 0 0 60px;       /* sidebar très étroite, juste pour les photos */
+    max-width: 60px;
+    padding: 10px;
+    overflow: hidden;
+  }
+
+  .sidebar a {
+    /*display: none;*/         /* cache les noms/prénoms */
+  }
+
+  .sidebar li {
+    justify-content: center;  /* centre les photos */
+    padding: 10px;
+  }
+
+  .chat {
+    flex: auto;        /* chat prend tout le reste de l’écran */
+    width:350px; /* s’adapte à l’espace restant */
+  }
+
+  /* Formulaire d’envoi ajusté pour icône non coupée */
+  .form-message input {
+    padding-right: 10px;
+  }
+}
+
 </style>
 
 <!-- === HTML Messagerie === -->
 <div class="container-messages">
     <!-- Sidebar amis -->
     <ul class="sidebar">
-        <h3>Mes amis</h3>
+    <button><a href="chat.php" title="Discussions" style="text-decoration:none; color:#333;"></button>
+    <img src="uploads/logogp.jpeg" alt=""> GROUPE
+    </a>
         <?php foreach($amis as $a): ?>
             <li>
+            <a href="messages.php?id=<?= $a['id'] ?>" style="text-decoration:none; color:#333;">
                 <img src="<?= htmlspecialchars($a['photo_profil']) ?>" alt="">
-                <a href="messages.php?id=<?= $a['id'] ?>" style="text-decoration:none; color:#333;">
                     <?= htmlspecialchars($a['prenom'].' '.$a['nom']) ?>
                 </a>
             </li>
@@ -202,7 +235,11 @@ if($destinataire_id > 0){
             <form id="sendForm" class="form-message">
                 <input type="text" id="message" placeholder="Écrire un message...">
                 <input type="hidden" id="dest_id" value="<?= $destinataire_id ?>">
-                <button type="submit">Envoyer</button>
+               
+                <button type="submit" title="Envoyer">
+    <i class="fas fa-paper-plane"></i>
+</button>
+
             </form>
         <?php else: ?>
             <p style="padding:10px;">Sélectionnez un ami pour discuter.</p>
