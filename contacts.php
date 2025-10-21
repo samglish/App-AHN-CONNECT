@@ -20,20 +20,19 @@ $amis = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 <style>
 body { font-family: Arial; background: #f3f4f6; }
-.container { width: 100%; margin: 40px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
 .friend { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
-.friend img { width: 50px; height: 50px; border-radius: 50%; margin-right: 10px; }
-.friend a { text-decoration: none; background: #007bff; color: white; padding: 8px 15px; border-radius: 8px; }
+.friend img { width: 30px; height: 30px; border-radius: 50%; margin-right: 10px; }
+.friend a { text-decoration: none; background: #3b7ca7;; color: white; padding: 4px 10px; border-radius: 4px; }
 </style>
 </head>
-    <h2>👥 Mes amis</h2>
+    <h2>👥 Discussions</h2></br>
     <?php foreach ($amis as $ami): ?>
         <div class="friend">
             <div class="friend-info">
-                <img src="<?= htmlspecialchars($ami['photo_profil'] ?? 'default.jpg') ?>" alt="">
+               <img src="uploads/<?= htmlspecialchars($ami['photo_profil']) ?>" alt="Photo profil" class="friend-photo">
                 <strong><?= htmlspecialchars($ami['prenom'] . " " . $ami['nom']) ?></strong>
             </div>
-            <a href="messages.php?id=<?= $ami['id'] ?>">💬 Discuter</a>
+            <a href="messages.php?id=<?= $ami['id'] ?>">💬</a>
         </div>
     <?php endforeach; ?>
 
