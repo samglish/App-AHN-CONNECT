@@ -14,7 +14,10 @@ if (!isset($_SESSION['id'])) {
 
 $user_id = $_SESSION['id'];
 //echo "<p>ID utilisateur connecté : $user_id</p>";
-echo "</br>";
+echo "</br>
+ <h4><a href="news.php" class="btn btn-primary">Voir les actualités du département</a> </br></br></h4>
+   
+";
 
 // ===================================================
 // ÉTAPE 2 : FORMULAIRE POUR AJOUTER DES AMIS

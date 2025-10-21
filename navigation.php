@@ -135,7 +135,7 @@ body {
     <!-- MENU DU SITE -->
     <nav class="nav-links">
         <a href="index.php" title="Accueil"><i class="fas fa-home"></i><span>Accueil</span></a>
-        <a href="news.php" title="Amis & Actus"><i class="fas fa-user-friends"></i><span>Amis/Actus</span></a>
+        <a href="amis.php" title="Amis & Actus"><i class="fas fa-user-friends"></i><span>Amis/Actus</span></a>
         <a href="resultats.php" title="Résultats"><i class="fas fa-bell"></i><span>Résultats</span></a>
         <a href="messages.php" title="Discussions"><i class="fas fa-comments"></i><span>Discussions</span></a>
         <a href="library.php" title="Bibliothèque"><i class="fas fa-book"></i><span>Bibliothèque</span></a>

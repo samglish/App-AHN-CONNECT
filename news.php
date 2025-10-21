@@ -18,9 +18,7 @@ $news = get_news($conn);
 ?>
  <center>
  <div class="sidebar">
- <h4><a href="amis.php" class="btn btn-primary">Amis</a> </br></br></h4>
-      
-      <?php if ($is_admin): ?>
+         <?php if ($is_admin): ?>
 <center>
    <h4> <a href="actu.php" class="btn btn-primary">Nouvelle Annonce</a></center></h4><br>
 <?php endif; ?>
