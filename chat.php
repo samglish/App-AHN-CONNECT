@@ -142,6 +142,29 @@ $result = $conn->query($sql);
             height: 30px;
         }
     }
+    /* Zone chat à taille fixe */
+.chat {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden; /* cache le débordement global */
+  height: 500px;    /* taille fixe desktop, à ajuster si tu veux */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Messages avec scroll interne */
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto; /* scroll vertical seulement ici */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8f9fa;
+}
+
 </style>
 
 <div class="chat-container">

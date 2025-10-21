@@ -2,278 +2,261 @@
 session_start();
 include 'db.php';
 include 'header.php';       // ton header AHN CONNECT
-
-
-if(!isset($_SESSION['id'])){
-    die("Vous devez être connecté !");
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php");
+    exit();
 }
 
-$mon_id = $_SESSION['id'];
-$destinataire_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$id_user = $_SESSION['id'];
 
 // Liste des amis
-$amis = [];
-$res = $conn->query("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id != $mon_id");
-while ($row = $res->fetch_assoc()) { $amis[] = $row; }
+$amis_query = $conn->prepare("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id != ?");
+$amis_query->bind_param("i", $id_user);
+$amis_query->execute();
+$amis_result = $amis_query->get_result();
 
-// Infos destinataire
-$destinataire = null;
-if($destinataire_id > 0){
-    $stmt = $conn->prepare("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id=?");
-    $stmt->bind_param("i", $destinataire_id);
+// Envoi d’un message
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['destinataire_id'], $_POST['contenu'])) {
+    $destinataire_id = $_POST['destinataire_id'];
+    $contenu = trim($_POST['contenu']);
+    if ($contenu !== "") {
+        $insert = $conn->prepare("INSERT INTO messages (expediteur_id, destinataire_id, contenu, date_envoi) VALUES (?, ?, ?, NOW())");
+        $insert->bind_param("iis", $id_user, $destinataire_id, $contenu);
+        $insert->execute();
+    }
+}
+
+// Chargement des messages
+$messages = [];
+$ami_info = null;
+if (isset($_GET['ami'])) {
+    $ami_id = $_GET['ami'];
+
+    // Récup info ami
+    $ami_stmt = $conn->prepare("SELECT nom, prenom, photo_profil FROM etudiants WHERE id = ?");
+    $ami_stmt->bind_param("i", $ami_id);
+    $ami_stmt->execute();
+    $ami_info = $ami_stmt->get_result()->fetch_assoc();
+
+    // Messages échangés
+    
+    
+    $stmt = $conn->prepare("
+        SELECT m.*, e.nom, e.prenom, e.photo_profil
+        FROM messages m
+        JOIN etudiants e ON m.expediteur_id = e.id
+        WHERE (m.expediteur_id = ? AND m.destinataire_id = ?)
+           OR (m.expediteur_id = ? AND m.destinataire_id = ?)
+        ORDER BY m.date_envoi ASC
+    ");
+    $stmt->bind_param("iiii", $id_user, $ami_id, $ami_id, $id_user);
     $stmt->execute();
-    $destinataire = $stmt->get_result()->fetch_assoc();
+    $messages = $stmt->get_result();
 }
 ?>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- === CSS intégrée directement === -->
 <style>
-/* Container */
-.container-messages {
-  display:flex;
-  flex-wrap:wrap;
-  gap:20px;
-  padding:15px;
-  min-height:80vh;
-  box-sizing:border-box;
-  overflow:hidden;
-}
+/* === LAYOUT GLOBAL === */
 
-/* Sidebar amis */
-.sidebar {
-  flex:1 1 250px;
-  max-width:250px;
-  background:#f1f1f1;
-  padding:10px;
-  border-radius:8px;
-  overflow-y:auto;
-}
-
-.sidebar h3 {
-  background:#0066cc;
-  color:white;
-  padding:10px;
-  margin:0;
-  border-radius:12px 12px 0 0;
-  text-align:center;
-}
-
-.sidebar li {
-  display:flex;
-  align-items:center;
-  padding:10px;
-  border-bottom:1px solid #f1f1f1;
-  cursor:pointer;
-  transition: background 0.2s;
-}
-
-.sidebar li:hover {
-  background:#f5faff;
-}
-
-.sidebar img {
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  margin-right:10px;
-  object-fit:cover;
-}
-
-/* Zone de chat */
-.chat {
-  flex:3 1 500px;
-  display:flex;
-  flex-direction:column;
-  background:#fff;
-  border-radius:12px;
-  overflow:hidden;
-  height:105%;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
-
-.header-chat {
-  background:#0066cc;
-  color:white;
-  padding:10px 15px;
-  font-weight:bold;
-  border-radius:12px 12px 0 0;
-}
-
-/* Messages */
-.messages {
-  flex:1;
-  padding:10px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  background:#f8f9fa;
-}
-
-.message {
-  max-width:75%;
-  padding:10px;
-  border-radius:15px;
-  word-wrap:break-word;
-}
-
-.message.exp {
-  background:#0066cc;
-  color:white;
-  align-self:flex-end;
-  border-bottom-right-radius:0;
-}
-
-.message.dest {
-  background:#e5e5ea;
-  align-self:flex-start;
-  border-bottom-left-radius:0;
-}
-
-/* Formulaire d’envoi */
-.form-message {
-  display:flex;
-  border-top:1px solid #ddd;
-  padding:10px;
-  background:#fff;
-  border-radius:0 0 12px 12px;
-}
-
-.form-message input {
-  flex:1;
-  border:1px solid #ccc;
-  border-radius:25px;
-  padding:10px 15px;
-  outline:none;
-  transition:border-color 0.2s;
-}
-
-.form-message input:focus {
-  border-color:#0066cc;
-}
-
-.form-message button {
-  margin-left:10px;
-  border:none;
-  background:#0066cc;
-  color:white;
-  border-radius:25px;
-  padding:10px 20px;
-  cursor:pointer;
-  transition:background 0.2s;
-}
-
-.form-message button:hover {
-  background:#004c99;
-}
-
-/* Responsive */
-@media(max-width:768px){
-  .container-messages { display:grid; grid-template-columns:1fr 2fr; height:calc(100vh - 150px);}
-  .sidebar { width:100%; max-width:none;}
-  .chat { width:100%;}
-}
-
-@media(max-width:480px){
-  .container-messages { grid-template-columns:1fr; height:auto;}
-}
-
-/* === Sidebar réduite encore plus sur mobile et chat agrandi === */
-@media (max-width:768px) {
-  .sidebar {
-    flex: 0 0 60px;       /* sidebar très étroite, juste pour les photos */
-    max-width: 60px;
-    padding: 10px;
+.main-container {
+    display: flex;
+    height: calc(100vh - 120px);
     overflow: hidden;
-  }
-
-  .sidebar a {
-    /*display: none;*/         /* cache les noms/prénoms */
-  }
-
-  .sidebar li {
-    justify-content: center;  /* centre les photos */
-    padding: 10px;
-  }
-
-  .chat {
-    flex: auto;        /* chat prend tout le reste de l’écran */
-    width:350px; /* s’adapte à l’espace restant */
-  }
-
-  /* Formulaire d’envoi ajusté pour icône non coupée */
-  .form-message input {
-    padding-right: 10px;
-  }
 }
 
+/* === ZONE AMIS === */
+.friends-list {
+    width: 15%;
+    min-width: 70px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+}
+.friend {
+    text-align: center;
+    padding: 10px 5px;
+}
+.friend a {
+    text-decoration: none;
+    color: #333;
+    font-size: 12px;
+}
+.friend img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 5px;
+    border: 2px solid #007bff;
+}
+
+/* === ZONE CHAT === */
+.chat-area {
+    width: 85%;
+    display: flex;
+    flex-direction: column;
+    background: #e9f0fa;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #3b7ca7;
+
+    color: white;
+    padding: 10px 15px;
+}
+.chat-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+
+/* === MESSAGES === */
+.messages-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    scroll-behavior: smooth;
+}
+.message {
+    max-width: 70%;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 15px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    position: relative;
+}
+.message.sent {
+    align-self: flex-end;
+    background-color: #3b7ca7;
+    color: white;
+}
+.message.received {
+    align-self: flex-start;
+    background-color: #fff;
+    border: 1px solid #ccc;
+}
+.message .info {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-bottom: 2px;
+}
+.message .time {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    position: absolute;
+    bottom: -13px;
+    right: 10px;
+}
+.message.received .time {
+    color: #777;
+}
+
+/* === FORMULAIRE === */
+.send-box {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+}
+.send-box input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    outline: none;
+}
+.send-box button {
+    background: none;
+    border: none;
+    color: #3b7ca7;
+    font-size: 22px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.send-box button:hover {
+    transform: scale(1.1);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .friends-list {
+        width: 15%;
+        min-width: 55px;
+    }
+    .chat-area {
+        width: 85%;
+    }
+}
 </style>
 
-<!-- === HTML Messagerie === -->
-<div class="container-messages">
-    <!-- Sidebar amis -->
-    <ul class="sidebar">
-    <button><a href="chat.php" title="Discussions" style="text-decoration:none; color:#333;"></button>
-    <img src="uploads/logogp.jpeg" alt=""> GROUPE
-    </a>
-        <?php foreach($amis as $a): ?>
-            <li>
-            <a href="messages.php?id=<?= $a['id'] ?>" style="text-decoration:none; color:#333;">
-                <img src="<?= htmlspecialchars($a['photo_profil']) ?>" alt="">
-                    <?= htmlspecialchars($a['prenom'].' '.$a['nom']) ?>
+<div class="main-container">
+
+    <!-- Liste des amis -->
+    <div class="friends-list">
+    <div class="friend">
+    <a href="chat.php" title="Discussions" style="text-decoration:none; color:#333;">
+    <img src="uploads/logogp.jpeg" alt=""> GROUPE</a></br>
+    <a href="contacts.php" title="Contacts" style="text-decoration:none; color:#333;">
+    <img src="uploads/logoct.jpeg" alt="">CONTACTS</a>
+    </div>
+        <?php while ($ami = $amis_result->fetch_assoc()): ?>
+            <div class="friend">
+                <a href="?ami=<?= $ami['id'] ?>">
+                    <img src="uploads/<?= htmlspecialchars($ami['photo_profil']) ?>" alt="Photo">
                 </a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+            </div>
+        <?php endwhile; ?>
+    </div>
 
     <!-- Zone de chat -->
-    <div class="chat">
-        <?php if($destinataire): ?>
-            <div class="header-chat"><?= htmlspecialchars($destinataire['prenom'].' '.$destinataire['nom']) ?></div>
-            <div id="messages" class="messages"></div>
-            <form id="sendForm" class="form-message">
-                <input type="text" id="message" placeholder="Écrire un message...">
-                <input type="hidden" id="dest_id" value="<?= $destinataire_id ?>">
-               
-                <button type="submit" title="Envoyer">
-    <i class="fas fa-paper-plane"></i>
-</button>
+    <div class="chat-area">
+        <?php if ($ami_info): ?>
+            <div class="chat-header">
+                <img src="uploads/<?= htmlspecialchars($ami_info['photo_profil']) ?>" alt="">
+                <strong><?= htmlspecialchars($ami_info['prenom'] . ' ' . $ami_info['nom']) ?></strong>
+            </div>
+        <?php endif; ?>
 
+        <div class="messages-box" id="messages">
+            <?php if (isset($_GET['ami'])): ?>
+                <?php while ($msg = $messages->fetch_assoc()): ?>
+                    <div class="message <?= ($msg['expediteur_id'] == $id_user) ? 'sent' : 'received' ?>">
+                        <div class="info">
+                            <?= htmlspecialchars($msg['prenom'] . ' ' . $msg['nom']) ?>
+                        </div>
+                        <?= htmlspecialchars($msg['contenu']) ?>
+                        <div class="time">
+                            <?= date("H:i", strtotime($msg['date_envoi'])) ?>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <p style="text-align:center;color:#777;">Sélectionnez un ami pour commencer à discuter</p>
+            <?php endif; ?>
+        </div>
+
+        <?php if (isset($_GET['ami'])): ?>
+            <form method="POST" class="send-box">
+                <input type="hidden" name="destinataire_id" value="<?= $_GET['ami'] ?>">
+                <input type="text" name="contenu" placeholder="Écrire un message..." required>
+                <button type="submit"><i class="fas fa-paper-plane"></i></button>
             </form>
-        <?php else: ?>
-            <p style="padding:10px;">Sélectionnez un ami pour discuter.</p>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- === JS pour messages en temps réel === -->
-<script>
-function loadMessages(){
-    let dest_id = document.getElementById('dest_id').value;
-    fetch('fetch_messages.php?id='+dest_id)
-        .then(res => res.text())
-        .then(data => {
-            let chatBox = document.getElementById('messages');
-            chatBox.innerHTML = data;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-}
-
-document.getElementById('sendForm')?.addEventListener('submit', function(e){
-    e.preventDefault();
-    let msg = document.getElementById('message').value.trim();
-    let dest_id = document.getElementById('dest_id').value;
-    if(msg==='') return;
-    let formData = new FormData();
-    formData.append('contenu', msg);
-    formData.append('destinataire_id', dest_id);
-    fetch('send_message.php',{method:'POST',body:formData})
-        .then(()=>{ document.getElementById('message').value=''; loadMessages(); });
-});
-
-setInterval(loadMessages,2000);
-loadMessages();
-</script>
-
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 

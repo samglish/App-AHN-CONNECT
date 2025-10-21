@@ -34,15 +34,9 @@ $level = $_SESSION['filiere'] ?? 'Étudiant';
         </div>
         <h3 class="sidebar-title">Navigation</h3>
         <div class="menu">
-        <center>
-        <div style="color: black;">
-    <a href="profile.php" class="menu-item"><i class="fas fa-user"></i> Mon Profil</a>&nbsp;&nbsp;&nbsp;
-    <a href="amis.php" class="menu-item"><i class="fas fa-user-friends"></i> Amis</a>&nbsp;&nbsp;&nbsp;
-    <a href="messages.php" class="menu-item"><i class="fas fa-comments"></i> Discussion</a><br>
-    <a href="apropos.php" class="menu-item"><i class="fas fa-building"></i> Visiter le département</a>
-</div>
-
-        </center>
+            <a href="profile.php" class="menu-item"><i class="fas fa-user"></i> Mon Profil</a>&nbsp;&nbsp;&nbsp;
+            <a href="amis.php" class="menu-item"><i class="fas fa-user-friends"></i>Amis</a>&nbsp;&nbsp;&nbsp;
+            <a href="chat.php" class="menu-item"><i class="fas fa-comments"></i>Discussion</a>
         </div>
     </div>
 

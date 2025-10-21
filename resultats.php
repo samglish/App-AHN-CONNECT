@@ -60,10 +60,16 @@ session_start();
             <a href="results/synthese_ihn3.pdf" class="btn btn-primary" target="_blank">Synthese IHN 3</a>
   </br></br>           
 <hr></br>
-            <h3>PV D'ADMISSION AU NIVEAU SUPERIEUR</h3>
+            <h3>PV D'ADMISSION AU NIVEAU 2</h3>
             <hr></br>
-              <a href="results/admission1.pdf" class="btn btn-primary" target="_blank">Admission IAN et IHN 1</a>
-            <a href="results/admission2.pdf" class="btn btn-primary" target="_blank">Admission IHN et IHN 2</a>
+              <a href="results/admission_ian1.pdf" class="btn btn-primary" target="_blank">Admission IAN 1</a>
+            <a href="results/admission_ihn1.pdf" class="btn btn-primary" target="_blank">Admission IHN 2</a>
+            </br></br> 
+           <h3>PV D'ADMISSION AU NIVEAU 3</h3>
+    
+            <hr></br>
+              <a href="results/admission_ian2.pdf" class="btn btn-primary" target="_blank">Admission IAN 2</a>
+            <a href="results/admission_ihn2.pdf" class="btn btn-primary" target="_blank">Admission IHN 2</a>
             
         </div>
 </div> 

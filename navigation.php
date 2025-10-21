@@ -11,7 +11,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 15px;
+    padding: 6px 13px;
     position: fixed;
     top: 0;
     left: 0;
@@ -28,7 +28,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 25px;
+    gap: 10px;
     flex: 1;
 }
 
@@ -94,35 +94,35 @@
     .navbar {
         flex-wrap: nowrap;
         justify-content: space-between;
-        padding: 6px 10px;
+        padding: 4px 6px; /* 🔹 un peu moins d’espace sur les bords */
     }
 
     .nav-links {
         flex: 1;
-        justify-content: space-around;
-        gap: 0;
+        justify-content: space-evenly; /* 🔹 répartit mieux les icônes */
+        gap: 2px; /* 🔹 réduit encore l’espace entre icônes */
     }
-
-    /* ✅ sur téléphone : seulement les icônes */
     .nav-links a span {
-        display: none;
-    }
+    display: none;
+}
+
 
     .nav-links a i {
-        font-size: 22px;
+        font-size: 21px; /* 🔹 taille légèrement réduite */
     }
 
     .user-section {
-        gap: 8px;
-    }
-
-    .user-name {
-        display: none; /* cache le nom sur mobile */
+        gap: 6px; /* 🔹 rapproche photo et bouton power */
     }
 
     .logout-btn {
-        font-size: 20px;
+        font-size: 18px; /* 🔹 ajuste pour bien s’aligner */
     }
+    
+     .user-name {
+        display: none; /* cache le nom sur mobile */
+    }
+
 }
 
 /* pour éviter que le contenu soit caché sous la barre */
