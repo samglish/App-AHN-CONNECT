@@ -1,5 +1,6 @@
 <?php
 session_start();
+ob_start();
 require_once "db.php";
 require_once 'header.php';
 require_once 'functions.php';
@@ -15,6 +16,7 @@ if (!isset($_SESSION['id'])) {
 
 // Vérifier si c’est un administrateur
 $is_admin = ($_SESSION['role'] ?? '') === 'admin';
+ob_end_flush();
 ?>
   <div class="sidebar">
  <div id="formulaire">

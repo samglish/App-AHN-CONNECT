@@ -1,5 +1,6 @@
 <?php
 session_start();
+ob_start();
 require_once 'db.php';
 require_once 'header.php';
 require_once 'functions.php';
@@ -7,8 +8,8 @@ require_once 'functions.php';
 if (!isset($_SESSION['id'])) {
     header("Location: accueil.php");
     exit();
+    ob_end_flush();
 }
-
 // Récupération des données
 $news = get_news($conn);
 $posts = get_posts($conn); // doit retourner ['files'] pour chaque post
@@ -34,9 +35,15 @@ $level = $_SESSION['filiere'] ?? 'Étudiant';
         </div>
         <h3 class="sidebar-title">Navigation</h3>
         <div class="menu">
-            <a href="profile.php" class="menu-item"><i class="fas fa-user"></i> Mon Profil</a>&nbsp;&nbsp;&nbsp;
-            <a href="amis.php" class="menu-item"><i class="fas fa-user-friends"></i>Amis</a>&nbsp;&nbsp;&nbsp;
-            <a href="chat.php" class="menu-item"><i class="fas fa-comments"></i>Discussion</a>
+        <center>
+        <div style="color: black;">
+    <a href="profile.php" class="menu-item"><i class="fas fa-user"></i> Mon Profil</a>&nbsp;&nbsp;&nbsp;
+    <a href="amis.php" class="menu-item"><i class="fas fa-user-friends"></i> Amis</a>&nbsp;&nbsp;&nbsp;
+    <a href="messages.php" class="menu-item"><i class="fas fa-comments"></i> Discussion</a><br>
+    <a href="apropos.php" class="menu-item"><i class="fas fa-building"></i> Visiter le département</a>
+</div>
+
+        </center>
         </div>
     </div>
 

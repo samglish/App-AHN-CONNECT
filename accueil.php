@@ -4,186 +4,92 @@ require_once 'db.php';
 require_once 'header.php';
 require_once 'functions1.php';
 
-// Fetch data for the page
-$news = get_news($conn);
-$posts = get_posts($conn);
 
-$user_id = $_SESSION['id'] ?? null;
-$username = ($_SESSION['prenom'] ?? '') . ' ' . ($_SESSION['nom'] ?? '');
-$profile_pic = $_SESSION['profile_pic'] ?? 'default.jpg';
-$level = $_SESSION['filiere'] ?? 'Étudiant';
 ?>
 
-<?php if (isset($_SESSION['id'])): ?>
-    <div class="main-content">
-        <!-- Left Sidebar -->
-        <div class="sidebar">
-            <h3 class="sidebar-title">Mon Profil</h3>
-            <div class="user-card">
-                <img src="uploads/<?= $profile_pic ?>" alt="Profile">
-                <div class="user-info">
-                    <div class="username"><?= $username ?></div>
-                    <div class="level"><?= $level ?></div>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: iPortfolio
+  * Template URL: https://bootstrapmade.com/iportfolio-bootstrap-portfolio-websites-template/
+  * Updated: Mar 17 2024 with Bootstrap v5.3.3
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+
+  <main id="main">
+
+    <!-- ======= Portfolio Details Section ======= -->
+    <section id="portfolio-details" class="portfolio-details">
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-8">
+            <div class="portfolio-details-slider swiper">
+              <div class="swiper-wrapper align-items-center">
+                <div class="swiper-slide">
+                  <img src="apropos/image1.jpg" alt="">
                 </div>
+                <div class="swiper-slide">
+                  <img src="apropos/image2.jpg" alt="">
+                </div>
+
+                <div class="swiper-slide">
+                <img src="apropos/image3.jpg" alt="">
+                </div>
+
+                <div class="swiper-slide">
+                <img src="apropos/image4.jpg" alt="">
+                </div>
+                 <div class="swiper-slide">
+                  <img src="apropos/image5.jpg" alt="">
+                </div>
+
+                <div class="swiper-slide">
+                <img src="apropos/image6.jpg" alt="">
+                </div>
+
+                <div class="swiper-slide">
+                <img src="apropos/image7.jpg" alt="">
+                </div>
+              </div>
+              <div class="swiper-pagination"></div>
             </div>
-            <h3 class="sidebar-title">Navigation</h3>
-            <div class="menu">
-                <a href="profile.php" class="menu-item"><i class="fas fa-user"></i> Mon Profil</a>
-                <a href="#" class="menu-item"><i class="fas fa-question-circle"></i> Aide</a>
-            </div>
-        </div>
+          </div>
 
-        <!-- News Feed -->
-        <div class="news-feed">
-            <!-- Create Post Form -->
-            <form class="post-form" method="POST" action="create_post.php" enctype="multipart/form-data">
-                <textarea name="content" placeholder="Quoi de neuf, <?= $username ?> ?" required></textarea>
-                <div class="file-upload">
-                    <label for="post_file"><i class="fas fa-paperclip"></i> Joindre un fichier</label>
-                    <input type="file" name="post_file" id="post_file" style="display: none;">
-                    <span class="file-name" id="file_name">Aucun fichier sélectionné</span>
-                </div>
-                <button type="submit" name="create_post" class="btn btn-primary">Publier</button>
-            </form>
+          </section><!-- End Services Section -->
 
-            <!-- User Posts -->
-            <h3 class="section-title">Publications récentes</h3>
-            <?php foreach ($posts as $post): ?>
-                <div class="post-card">
-                    <div class="post-header">
-                        <img src="uploads/<?= $post['photo_profil'] ?>" alt="Profile">
-                        <div class="post-user">
-                            <div class="username"><?= $post['username'] ?></div>
-                            <div class="post-time"><?= date('d/m/Y H:i', strtotime($post['created_at'])) ?></div>
-                        </div>
-                    </div>
+          <!-- ======= Testimonials Section ======= -->
+          <section id="testimonials" class="testimonials section-bg">
+            <div class="container">
+                    <div class="section-title">
+                <h2>Département des Arts et Humanités Numériques</h2>
+                <p>École Nationale Supérieure Polytechnique de Maroua</p>
+              </div>
+       Le Département des Arts et Humanités Numériques de l'École Nationale Supérieure Polytechnique de Maroua est un département dynamique et innovant, alliant arts, sciences humaines et technologies numériques. Il prépare les étudiants à un avenir où la créativité et les compétences techniques se rencontrent pour relever les défis numériques de demain.
+               </div>
 
-                    <div class="post-content">
-                        <p><?= $post['content'] ?></p>
-                        <?php if ($post['file_path']): ?>
-                            <div class="post-file">
-                                <?php 
-                                    $ext = pathinfo($post['file_path'], PATHINFO_EXTENSION);
-                                    $image_exts = ['jpg', 'jpeg', 'png', 'gif'];
-                                ?>
-                                <?php if (in_array(strtolower($ext), $image_exts)): ?>
-                                    <img src="uploads/<?= $post['file_path'] ?>" alt="Post Image">
-                                <?php else: ?>
-                                    <a href="uploads/<?= $post['file_path'] ?>" class="file-download">
-                                        <i class="fas fa-file-download"></i> Télécharger <?= strtoupper($ext) ?> (<?= $post['file_path'] ?>)
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                                <?php endif; ?>
-                    </div>
-                    <style>
-                    .like-button.liked {
-                            color: blue;
-                    }
-
-                    </style>
-
-
-<div class="post-actions">
-    <div class="post-action like-button" data-post-id="<?= $post['id'] ?>">
-        <i class="<?= $post['user_has_liked'] ? 'fas' : 'far' ?> fa-thumbs-up"></i> 
-        J'aime (<span class="like-count"><?= $post['like_count'] ?></span>)
-    </div>
-    <div class="post-action">
-        <i class="far fa-comment"></i> Commenter
-    </div>
-    <div class="post-action">
-        <i class="far fa-share-square"></i> Partager
-    </div>
-</div>
-
-
-
-                    <div class="post-comments">
-                        <h4 class="comments-title">Commentaires (<?= $post['comment_count'] ?>)</h4>
-
-                        <?php foreach ($post['comments'] as $comment): ?>
-                            <div class="comment">
-                                <img src="uploads/<?= $comment['photo_profil'] ?>" alt="Profile">
-                                <div class="comment-content">
-                                    <div class="username"><?= $comment['username'] ?></div>
-                                    <div class="text"><?= $comment['content'] ?></div>
-                                    <div class="comment-time"><?= date('d/m/Y H:i', strtotime($comment['created_at'])) ?></div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-
-                        <form class="comment-form" method="POST" action="create_comment.php">
-                            <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                            <input type="text" name="comment_content" placeholder="Ajouter un commentaire..." required>
-                            <button type="submit" name="create_comment" class="btn btn-primary">Envoyer</button>
-                        </form>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Right Sidebar -->
-        <div class="right-sidebar">
-            <h3 class="section-title">Actualités du Département</h3>
-            <?php foreach ($news as $item): ?>
-                <div class="news-card">
-                    <div class="news-title"><?= $item['title'] ?></div>
-                    <div class="news-date">Publié le <?= date('d/m/Y H:i', strtotime($item['created_at'])) ?></div>
-                    <div class="news-content"><?= $item['content'] ?></div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-    </div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelector('.news-feed').addEventListener('click', function(e) {
-        if (e.target.closest('.like-button')) {
-            const likeBtn = e.target.closest('.like-button');
-            const postId = likeBtn.dataset.postId;
-
-            fetch('like_post.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'post_id=' + postId
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const likeCountSpan = likeBtn.querySelector('.like-count');
-                    likeCountSpan.textContent = data.like_count;
-
-                    const icon = likeBtn.querySelector('i');
-                    if (data.user_has_liked) {
-                        likeBtn.classList.add('liked');
-                        icon.classList.remove('far');
-                        icon.classList.add('fas');
-                    } else {
-                        likeBtn.classList.remove('liked');
-                        icon.classList.remove('fas');
-                        icon.classList.add('far');
-                    }
-                } else {
-                    alert(data.message);
-                }
-            });
-        }
-    });
-});
-</script>
-
-<?php else: ?>
     <!-- Landing Page for Non-Logged-in Users -->
     <div class="hero">
-        <div class="hero-banner">
-            <h1>Bienvenue sur AHN CONNECT</h1>
-            <p>Connectez-vous pour rejoindre vos camarades, partager vos ressources et rester informés des actualités de votre département.</p>
-            <div class="hero-actions">
-                <center>
-                    <a href="login.php" class="btn btn-outline">Se connecter</a>
-                </center>
-            </div>
+      <div class="hero-banner">
+            <h1>AHN CONNECT</h1>
+            <p>Rejoignez vos camarades, partagez vos ressources et restez toujours informé des dernières actualités de votre département.</p>
+            <hr>
+<p>Pas encore de compte ? <a href="register.php" class="btn btn-primary">Créez-en un</a> ou <a href="login.php" class="btn btn-primary">connectez-vous</a> pour rejoindre vos camarades et profiter de toutes les fonctionnalités du réseau.</p>
+
         </div>
         <div class="features">
             <div class="feature-card">
@@ -194,15 +100,41 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="feature-card">
                 <i class="fas fa-book"></i>
                 <h3 style="color: #707070;">Ressources Partagées</h3>
-                <p style="color: #707070;">Accédez et partagez des ressources pédagogiques variées : cours, exercices, projets, etc.</p>
+                <p style="color: #707070;">Accédez au planning de la semaine, aux cours, à la bibliothèque et aux archives, partagez des ressources pédagogiques et participez aux discussions avec vos camarades.</p>
+
             </div>
             <div class="feature-card">
                 <i class="fas fa-bullhorn"></i>
                 <h3 style="color: #707070;">Actualités en Direct</h3>
-                <p style="color: #707070;">Restez informé en temps réel des annonces essentielles, des événements et des résultats du département.</p>
+<p style="color: #707070;">Suivez en temps réel les annonces importantes, les événements à venir et les résultats du département pour ne rien manquer.</p>
+
             </div>
         </div>
     </div>
-<?php endif; ?>
+
+        </div>
+
+      </div>
+    </section><!-- End Portfolio Details Section -->
+
+  </main><!-- End #main -->
+
+  
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/typed.js/typed.umd.js"></script>
+  <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+
+  <!-- Template Main JS File -->
+  <script src="assets/js/main.js"></script>
 
 <?php require_once 'footer.php'; ?>

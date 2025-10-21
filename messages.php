@@ -1,10 +1,13 @@
 <?php
 session_start();
-include 'db.php';
-include 'header.php';       // ton header AHN CONNECT
+ob_start();
+require_once 'db.php';
+require_once 'header.php';
 if (!isset($_SESSION['id'])) {
+    $_SESSION['error'] = "Connectez-vous pour accéder à cette page.";
     header("Location: login.php");
     exit();
+    ob_end_flush();
 }
 
 $id_user = $_SESSION['id'];
