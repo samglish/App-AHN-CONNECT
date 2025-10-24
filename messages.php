@@ -1,5 +1,6 @@
 <?php
 session_start();
+ob_start();
 include 'db.php';
 include 'header.php'; // ton header AHN CONNECT
 
@@ -9,7 +10,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 $id_user = $_SESSION['id'];
-
+  ob_end_flush();
 /* ===============================
    1️⃣ Charger la liste des amis
    =============================== */
@@ -368,4 +369,7 @@ checkNewMessages();
 </div>
 
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<!-- ALTER TABLE messages ADD COLUMN lu TINYINT(1) DEFAULT 0;
+ -->
 
