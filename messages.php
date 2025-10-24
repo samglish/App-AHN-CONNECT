@@ -140,8 +140,9 @@ checkNewMessages();
 ================================== -->
 <style>
 .main-container {
-    display: flex;
-    height: calc(100vh - 120px);
+     display: flex;
+    flex-direction: row;
+    height: 100dvh; /* ✅ prend toute la hauteur visible, compatible mobile */
     overflow: hidden;
 }
 
