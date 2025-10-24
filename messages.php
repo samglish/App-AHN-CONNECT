@@ -1,49 +1,52 @@
 <?php
 session_start();
-ob_start();
-require_once 'db.php';
-require_once 'header.php';
+include 'db.php';
+include 'header.php'; // ton header AHN CONNECT
+
 if (!isset($_SESSION['id'])) {
-    $_SESSION['error'] = "Connectez-vous pour accéder à cette page.";
     header("Location: login.php");
     exit();
-    ob_end_flush();
 }
 
 $id_user = $_SESSION['id'];
 
-// Liste des amis
+/* ===============================
+   1️⃣ Charger la liste des amis
+   =============================== */
 $amis_query = $conn->prepare("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id != ?");
 $amis_query->bind_param("i", $id_user);
 $amis_query->execute();
 $amis_result = $amis_query->get_result();
 
-// Envoi d’un message
+/* ===============================
+   2️⃣ Envoi d’un message
+   =============================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['destinataire_id'], $_POST['contenu'])) {
     $destinataire_id = $_POST['destinataire_id'];
     $contenu = trim($_POST['contenu']);
     if ($contenu !== "") {
-        $insert = $conn->prepare("INSERT INTO messages (expediteur_id, destinataire_id, contenu, date_envoi) VALUES (?, ?, ?, NOW())");
+        $insert = $conn->prepare("INSERT INTO messages (expediteur_id, destinataire_id, contenu, date_envoi, lu) VALUES (?, ?, ?, NOW(), 0)");
         $insert->bind_param("iis", $id_user, $destinataire_id, $contenu);
         $insert->execute();
     }
 }
 
-// Chargement des messages
+/* ===============================
+   3️⃣ Chargement des messages
+   =============================== */
 $messages = [];
 $ami_info = null;
+
 if (isset($_GET['ami'])) {
     $ami_id = $_GET['ami'];
 
-    // Récup info ami
+    // Infos de l'ami
     $ami_stmt = $conn->prepare("SELECT nom, prenom, photo_profil FROM etudiants WHERE id = ?");
     $ami_stmt->bind_param("i", $ami_id);
     $ami_stmt->execute();
     $ami_info = $ami_stmt->get_result()->fetch_assoc();
 
     // Messages échangés
-    
-    
     $stmt = $conn->prepare("
         SELECT m.*, e.nom, e.prenom, e.photo_profil
         FROM messages m
@@ -55,12 +58,86 @@ if (isset($_GET['ami'])) {
     $stmt->bind_param("iiii", $id_user, $ami_id, $ami_id, $id_user);
     $stmt->execute();
     $messages = $stmt->get_result();
+
+    // ✅ Marquer les messages reçus de cet ami comme "lus"
+    $update = $conn->prepare("
+        UPDATE messages 
+        SET lu = 1 
+        WHERE expediteur_id = ? 
+          AND destinataire_id = ? 
+          AND lu = 0
+    ");
+    $update->bind_param("ii", $ami_id, $id_user);
+    $update->execute();
+}
+
+/* ===============================
+   4️⃣ Vérification Ajax des messages non lus
+   =============================== */
+if (isset($_GET['action']) && $_GET['action'] === 'check_new_messages') {
+    $stmt = $conn->prepare("SELECT COUNT(*) AS unread_count FROM messages WHERE destinataire_id = ? AND lu = 0");
+    $stmt->bind_param("i", $id_user);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+
+    echo json_encode($result);
+    exit;
 }
 ?>
 
-<style>
-/* === LAYOUT GLOBAL === */
+<!-- ===============================
+     HTML / INTERFACE
+================================== -->
 
+<!-- Badge de notification dans le header -->
+<style>
+#message-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 11px;
+  border-radius: 50%;
+  padding: 3px 6px;
+  display: none;
+}
+</style>
+
+<!-- Script JS pour le badge -->
+<script>
+let lastUnreadCount = 0;
+
+function checkNewMessages() {
+  fetch('messages.php?action=check_new_messages')
+    .then(res => res.json())
+    .then(data => {
+      const unread = parseInt(data.unread_count) || 0;
+      const badge = document.getElementById('message-badge');
+
+      if (badge) {
+        badge.textContent = unread > 0 ? unread : '';
+        badge.style.display = unread > 0 ? 'inline-block' : 'none';
+      }
+
+      if (unread > lastUnreadCount && lastUnreadCount !== 0) {
+        const sound = new Audio('notif.mp3'); // facultatif
+        sound.play().catch(() => {});
+      }
+
+      lastUnreadCount = unread;
+    })
+    .catch(console.error);
+}
+
+setInterval(checkNewMessages, 5000);
+checkNewMessages();
+</script>
+
+<!-- ===============================
+     CSS STYLES
+================================== -->
+<style>
 .main-container {
     display: flex;
     height: calc(100vh - 120px);
@@ -81,6 +158,7 @@ if (isset($_GET['ami'])) {
 .friend {
     text-align: center;
     padding: 10px 5px;
+    position: relative;
 }
 .friend a {
     text-decoration: none;
@@ -96,6 +174,18 @@ if (isset($_GET['ami'])) {
     border: 2px solid #007bff;
 }
 
+/* Badge sur photo d'ami */
+.friend .unread-badge {
+    position: absolute;
+    top: 6px;
+    right: 12px;
+    background: red;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    padding: 2px 5px;
+}
+
 /* === ZONE CHAT === */
 .chat-area {
     width: 85%;
@@ -109,7 +199,6 @@ if (isset($_GET['ami'])) {
     align-items: center;
     gap: 10px;
     background: #3b7ca7;
-
     color: white;
     padding: 10px 15px;
 }
@@ -156,10 +245,10 @@ if (isset($_GET['ami'])) {
 }
 .message .time {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.8);
     position: absolute;
     bottom: -13px;
     right: 10px;
+    color: rgba(255, 255, 255, 0.8);
 }
 .message.received .time {
     color: #777;
@@ -195,30 +284,47 @@ if (isset($_GET['ami'])) {
 
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
-    .friends-list {
-        width: 15%;
-        min-width: 55px;
-    }
-    .chat-area {
-        width: 85%;
-    }
+    .friends-list { width: 20%; min-width: 55px; }
+    .chat-area { width: 80%; }
 }
 </style>
 
+<!-- ===============================
+     INTERFACE CHAT
+================================== -->
 <div class="main-container">
 
     <!-- Liste des amis -->
     <div class="friends-list">
-    <div class="friend">
-    <a href="chat.php" title="Discussions" style="text-decoration:none; color:#333;">
-    <img src="uploads/logogp.jpeg" alt=""> GROUPE</a></br>
-    <a href="contacts.php" title="Contacts" style="text-decoration:none; color:#333;">
-    <img src="uploads/logoct.jpeg" alt="">CONTACTS</a>
-    </div>
+        <div class="friend">
+            <a href="chat.php"><img src="uploads/logogp.jpeg" alt=""> GROUPE</a><br>
+            <a href="contacts.php"><img src="uploads/logoct.jpeg" alt=""> CONTACTS</a>
+        </div>
+
+        <?php
+        // Pour afficher le nombre de messages non lus de chaque ami
+        $unread_stmt = $conn->prepare("
+            SELECT expediteur_id, COUNT(*) AS unread 
+            FROM messages 
+            WHERE destinataire_id = ? AND lu = 0 
+            GROUP BY expediteur_id
+        ");
+        $unread_stmt->bind_param("i", $id_user);
+        $unread_stmt->execute();
+        $unread_result = $unread_stmt->get_result();
+        $unread_counts = [];
+        while ($row = $unread_result->fetch_assoc()) {
+            $unread_counts[$row['expediteur_id']] = $row['unread'];
+        }
+        ?>
+
         <?php while ($ami = $amis_result->fetch_assoc()): ?>
             <div class="friend">
                 <a href="?ami=<?= $ami['id'] ?>">
                     <img src="uploads/<?= htmlspecialchars($ami['photo_profil']) ?>" alt="Photo">
+                    <?php if (!empty($unread_counts[$ami['id']])): ?>
+                        <span class="unread-badge"><?= $unread_counts[$ami['id']] ?></span>
+                    <?php endif; ?>
                 </a>
             </div>
         <?php endwhile; ?>
