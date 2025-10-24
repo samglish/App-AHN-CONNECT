@@ -10,12 +10,26 @@ if (!isset($_SESSION['id'])) {
 }
 
 $id_user = $_SESSION['id'];
-  ob_end_flush();
+ob_end_flush();
+
 /* ===============================
    1️⃣ Charger la liste des amis
    =============================== */
-$amis_query = $conn->prepare("SELECT id, nom, prenom, photo_profil FROM etudiants WHERE id != ?");
-$amis_query->bind_param("i", $id_user);
+
+// 🟢 On récupère aussi le nombre de messages non lus pour chaque ami
+$amis_query = $conn->prepare("
+    SELECT e.id, e.nom, e.prenom, e.photo_profil, 
+           COUNT(m.id) AS non_lus
+    FROM etudiants e
+    LEFT JOIN messages m 
+      ON m.expediteur_id = e.id 
+     AND m.destinataire_id = ? 
+     AND m.lu = 0
+    WHERE e.id != ?
+    GROUP BY e.id, e.nom, e.prenom, e.photo_profil
+    ORDER BY non_lus DESC, e.prenom ASC
+");
+$amis_query->bind_param("ii", $id_user, $id_user);
 $amis_query->execute();
 $amis_result = $amis_query->get_result();
 
@@ -90,7 +104,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'check_new_messages') {
      HTML / INTERFACE
 ================================== -->
 
-<!-- Badge de notification dans le header -->
 <style>
 #message-badge {
   position: absolute;
@@ -105,7 +118,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'check_new_messages') {
 }
 </style>
 
-<!-- Script JS pour le badge -->
 <script>
 let lastUnreadCount = 0;
 
@@ -122,7 +134,7 @@ function checkNewMessages() {
       }
 
       if (unread > lastUnreadCount && lastUnreadCount !== 0) {
-        const sound = new Audio('notif.mp3'); // facultatif
+        const sound = new Audio('notif.mp3');
         sound.play().catch(() => {});
       }
 
@@ -135,18 +147,13 @@ setInterval(checkNewMessages, 5000);
 checkNewMessages();
 </script>
 
-<!-- ===============================
-     CSS STYLES
-================================== -->
 <style>
 .main-container {
-     display: flex;
+   display: flex;
     flex-direction: row;
     height: 100dvh; /* ✅ prend toute la hauteur visible, compatible mobile */
     overflow: hidden;
 }
-
-/* === ZONE AMIS === */
 .friends-list {
     width: 15%;
     min-width: 70px;
@@ -175,8 +182,6 @@ checkNewMessages();
     margin-bottom: 5px;
     border: 2px solid #007bff;
 }
-
-/* Badge sur photo d'ami */
 .friend .unread-badge {
     position: absolute;
     top: 6px;
@@ -187,15 +192,12 @@ checkNewMessages();
     border-radius: 50%;
     padding: 2px 5px;
 }
-
-/* === ZONE CHAT === */
 .chat-area {
     width: 85%;
     display: flex;
     flex-direction: column;
     background: #e9f0fa;
 }
-
 .chat-header {
     display: flex;
     align-items: center;
@@ -211,8 +213,6 @@ checkNewMessages();
     object-fit: cover;
     border: 2px solid #fff;
 }
-
-/* === MESSAGES === */
 .messages-box {
     flex: 1;
     overflow-y: auto;
@@ -255,14 +255,14 @@ checkNewMessages();
 .message.received .time {
     color: #777;
 }
-
-/* === FORMULAIRE === */
 .send-box {
     display: flex;
     align-items: center;
     padding: 10px;
     background: #fff;
     border-top: 1px solid #ddd;
+    position: sticky;
+    bottom: 0;
 }
 .send-box input[type="text"] {
     flex: 1;
@@ -283,56 +283,32 @@ checkNewMessages();
 .send-box button:hover {
     transform: scale(1.1);
 }
-
-/* === RESPONSIVE === */
 @media (max-width: 768px) {
     .friends-list { width: 20%; min-width: 55px; }
     .chat-area { width: 80%; }
 }
 </style>
 
-<!-- ===============================
-     INTERFACE CHAT
-================================== -->
 <div class="main-container">
 
-    <!-- Liste des amis -->
     <div class="friends-list">
         <div class="friend">
             <a href="chat.php"><img src="uploads/logogp.jpeg" alt=""> GROUPE</a><br>
             <a href="contacts.php"><img src="uploads/logoct.jpeg" alt=""> CONTACTS</a>
         </div>
 
-        <?php
-        // Pour afficher le nombre de messages non lus de chaque ami
-        $unread_stmt = $conn->prepare("
-            SELECT expediteur_id, COUNT(*) AS unread 
-            FROM messages 
-            WHERE destinataire_id = ? AND lu = 0 
-            GROUP BY expediteur_id
-        ");
-        $unread_stmt->bind_param("i", $id_user);
-        $unread_stmt->execute();
-        $unread_result = $unread_stmt->get_result();
-        $unread_counts = [];
-        while ($row = $unread_result->fetch_assoc()) {
-            $unread_counts[$row['expediteur_id']] = $row['unread'];
-        }
-        ?>
-
         <?php while ($ami = $amis_result->fetch_assoc()): ?>
             <div class="friend">
                 <a href="?ami=<?= $ami['id'] ?>">
                     <img src="uploads/<?= htmlspecialchars($ami['photo_profil']) ?>" alt="Photo">
-                    <?php if (!empty($unread_counts[$ami['id']])): ?>
-                        <span class="unread-badge"><?= $unread_counts[$ami['id']] ?></span>
+                    <?php if ($ami['non_lus'] > 0): ?>
+                        <span class="unread-badge"><?= $ami['non_lus'] ?></span>
                     <?php endif; ?>
                 </a>
             </div>
         <?php endwhile; ?>
     </div>
 
-    <!-- Zone de chat -->
     <div class="chat-area">
         <?php if ($ami_info): ?>
             <div class="chat-header">
@@ -345,13 +321,9 @@ checkNewMessages();
             <?php if (isset($_GET['ami'])): ?>
                 <?php while ($msg = $messages->fetch_assoc()): ?>
                     <div class="message <?= ($msg['expediteur_id'] == $id_user) ? 'sent' : 'received' ?>">
-                        <div class="info">
-                            <?= htmlspecialchars($msg['prenom'] . ' ' . $msg['nom']) ?>
-                        </div>
+                        <div class="info"><?= htmlspecialchars($msg['prenom'] . ' ' . $msg['nom']) ?></div>
                         <?= htmlspecialchars($msg['contenu']) ?>
-                        <div class="time">
-                            <?= date("H:i", strtotime($msg['date_envoi'])) ?>
-                        </div>
+                        <div class="time"><?= date("H:i", strtotime($msg['date_envoi'])) ?></div>
                     </div>
                 <?php endwhile; ?>
             <?php else: ?>
@@ -371,6 +343,15 @@ checkNewMessages();
 
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
-<!-- ALTER TABLE messages ADD COLUMN lu TINYINT(1) DEFAULT 0;
- -->
+<script>
+// ✅ Scroll automatique vers le dernier message
+document.addEventListener("DOMContentLoaded", function() {
+    const messagesBox = document.getElementById("messages");
+    if (messagesBox) {
+        setTimeout(() => {
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }, 400);
+    }
+});
+</script>
 
