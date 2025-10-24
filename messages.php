@@ -300,7 +300,7 @@ checkNewMessages();
         <?php while ($ami = $amis_result->fetch_assoc()): ?>
             <div class="friend">
                 <a href="?ami=<?= $ami['id'] ?>">
-                    <img src="uploads/<?= htmlspecialchars($ami['photo_profil']) ?>" alt="Photo">
+                    <img src="uploads/<?= htmlspecialchars($ami['photo_profil']) ?>" alt="Photo"><?php echo $ami['nom']  ?>
                     <?php if ($ami['non_lus'] > 0): ?>
                         <span class="unread-badge"><?= $ami['non_lus'] ?></span>
                     <?php endif; ?>
